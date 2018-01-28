@@ -30,6 +30,13 @@
             android:key="preferences_show_week_num"
             android:defaultValue="false"
             android:title="@string/preferences_show_week_num_title" />
+       
+        <!-- check box for chinese holiday -->
+        <CheckBoxPreference
+            android:key="preferences_show_chinese_holidays"
+            android:defaultValue="false"
+            android:title="显示中国假日" />
+            
         <ListPreference
             android:key="preferences_week_start_day"
             android:defaultValue="@string/preferences_week_start_day_default"

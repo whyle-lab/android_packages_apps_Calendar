@@ -55,6 +55,8 @@ import com.android.timezonepicker.TimeZoneInfo;
 import com.android.timezonepicker.TimeZonePickerDialog;
 import com.android.timezonepicker.TimeZonePickerDialog.OnTimeZoneSetListener;
 import com.android.timezonepicker.TimeZonePickerUtils;
+import android.whyle.utils.WhyleUtils;
+import android.util.*;
 
 public class GeneralPreferences extends PreferenceFragment implements
         OnSharedPreferenceChangeListener, OnPreferenceChangeListener, OnTimeZoneSetListener {
@@ -72,6 +74,8 @@ public class GeneralPreferences extends PreferenceFragment implements
     public static final String KEY_SHOW_WEEK_NUM = "preferences_show_week_num";
     public static final String KEY_DAYS_PER_WEEK = "preferences_days_per_week";
     public static final String KEY_SKIP_SETUP = "preferences_skip_setup";
+    public static final String KEY_SHOW_CHINESE_HOLIDAYS = "preferences_show_chinese_holidays";
+    
 
     public static final String KEY_CLEAR_SEARCH_HISTORY = "preferences_clear_search_history";
 
@@ -136,6 +140,8 @@ public class GeneralPreferences extends PreferenceFragment implements
     CheckBoxPreference mPopup;
     CheckBoxPreference mUseHomeTZ;
     CheckBoxPreference mHideDeclined;
+    CheckBoxPreference mChineseHolidays;
+    
     Preference mHomeTZ;
     TimeZonePickerUtils mTzPickerUtils;
     ListPreference mWeekStart;
@@ -195,7 +201,18 @@ public class GeneralPreferences extends PreferenceFragment implements
         mPopup = (CheckBoxPreference) preferenceScreen.findPreference(KEY_ALERTS_POPUP);
         mUseHomeTZ = (CheckBoxPreference) preferenceScreen.findPreference(KEY_HOME_TZ_ENABLED);
         mHideDeclined = (CheckBoxPreference) preferenceScreen.findPreference(KEY_HIDE_DECLINED);
-        mWeekStart = (ListPreference) preferenceScreen.findPreference(KEY_WEEK_START_DAY);
+        mChineseHolidays = (CheckBoxPreference) preferenceScreen.findPreference(KEY_SHOW_CHINESE_HOLIDAYS);
+        mChineseHolidays.setChecked(WhyleUtils.isSupportLanguage(this));
+        try{
+		Preference pref = findPreference(KEY_SHOW_CHINESE_HOLIDAYS);
+        if (pref != null) {
+            getPreferenceScreen().removePreference(pref);
+        }
+		}catch(Exception e)
+		{
+			Log.e("GeneralPreferences",e.toString());
+		}
+		mWeekStart = (ListPreference) preferenceScreen.findPreference(KEY_WEEK_START_DAY);
         mDefaultReminder = (ListPreference) preferenceScreen.findPreference(KEY_DEFAULT_REMINDER);
         mHomeTZ = preferenceScreen.findPreference(KEY_HOME_TZ);
 
@@ -286,6 +303,7 @@ public class GeneralPreferences extends PreferenceFragment implements
     private void setPreferenceListeners(OnPreferenceChangeListener listener) {
         mUseHomeTZ.setOnPreferenceChangeListener(listener);
         mHomeTZ.setOnPreferenceChangeListener(listener);
+        mChineseHolidays.setOnPreferenceChangeListener(listener);
         mWeekStart.setOnPreferenceChangeListener(listener);
         mDefaultReminder.setOnPreferenceChangeListener(listener);
         mSnoozeDelay.setOnPreferenceChangeListener(listener);
@@ -343,6 +361,11 @@ public class GeneralPreferences extends PreferenceFragment implements
             Intent intent = new Intent(Utils.getWidgetScheduledUpdateAction(activity));
             intent.setDataAndType(CalendarContract.CONTENT_URI, Utils.APPWIDGET_DATA_TYPE);
             activity.sendBroadcast(intent);
+            return true;
+        } else if (preference == mChineseHolidays) {
+        // Chinese Holidays
+            mChineseHolidays.setChecked((Boolean) newValue);
+            getSharedPreferences(activity).edit().putBoolean("ch_holiday",(Boolean)newValue).commit();
             return true;
         } else if (preference == mWeekStart) {
             mWeekStart.setValue((String) newValue);
